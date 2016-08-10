@@ -62,17 +62,19 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	 * @param target
 	 */
 	private Node findNode(Object target) {
-		// some implementations can handle null as a key, but not this one
-		if (target == null) {
-            throw new NullPointerException();
-	    }
-		
-		// something to make the compiler happy
-		@SuppressWarnings("unchecked")
 		Comparable<? super K> k = (Comparable<? super K>) target;
-		
-		// the actual search
-        // TODO: Fill this in.
+
+		Node node = root;
+		while (node != null) {
+			int tbc = k.compareTo(node.key);
+			if (tbc < 0) {
+				node = node.left;
+			} else if (tbc > 0) {
+				node = node.right;
+			} else {
+				return node;
+			}
+		}
         return null;
 	}
 
@@ -92,6 +94,13 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsValue(Object target) {
+		return containsValueHelper(root, target);
+	}
+
+	private boolean containsValueHelper(Node node, Object target) {
+		if (node == null) return false;
+		if (node.value.equals(target)) return true;
+		if (containsValueHelper(node.left, target) || containsValueHelper(node.right, target)) return true;
 		return false;
 	}
 
@@ -117,8 +126,16 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	@Override
 	public Set<K> keySet() {
 		Set<K> set = new LinkedHashSet<K>();
-        // TODO: Fill this in.
+        inOrderTraversal(root, set);
 		return set;
+	}
+
+	private void inOrderTraversal(Node node, Set<K> set) {
+		if (node == null) return;
+		inOrderTraversal(node.left, set);
+		set.add(node.key);
+		inOrderTraversal(node.right, set);
+
 	}
 
 	@Override
@@ -135,8 +152,30 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	}
 
 	private V putHelper(Node node, K key, V value) {
-        // TODO: Fill this in.
-        return null;
+		Comparable<? super K> k = (Comparable<? super K>) key;
+		int tbc = k.compareTo(node.key);
+
+		if (tbc > 0) {
+			if (node.right == null) {
+				node.right = new Node(key, value);
+				size++;
+				return null;
+			} else {
+				return putHelper(node.right, key, value);
+			}
+		}
+		if (tbc < 0) {
+			if (node.left == null) {
+				node.left = new Node(key, value);
+				size++;
+				return null;
+			} else {
+				return putHelper(node.left, key, value);
+			}
+		}
+		V value_to_return = node.value;
+		node.value = value;
+		return value_to_return;
 	}
 
 	@Override
